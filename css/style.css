@@ -32,6 +32,8 @@ body {
     var(--color-bg);
   background-attachment: fixed;
   line-height: 1.65;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
