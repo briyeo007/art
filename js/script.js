@@ -46,21 +46,60 @@ if (lightbox) {
   const lightboxTitle = lightbox.querySelector(".lightbox-title");
   const lightboxMeta = lightbox.querySelector(".lightbox-meta");
   const closeBtn = lightbox.querySelector(".lightbox-close");
+  const prevBtn = lightbox.querySelector(".lightbox-prev");
+  const nextBtn = lightbox.querySelector(".lightbox-next");
+
+  let navItems = [];
+  let currentIndex = -1;
+
+  const showItem = (item) => {
+    const img = item.querySelector("img");
+    if (!img) return;
+
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    lightboxTitle.textContent = item.querySelector("h3")?.textContent || "";
+    lightboxMeta.textContent = item.querySelector("span")?.textContent || "";
+  };
+
+  const updateNavVisibility = () => {
+    const hideNav = navItems.length < 2;
+    prevBtn?.classList.toggle("is-hidden", hideNav);
+    nextBtn?.classList.toggle("is-hidden", hideNav);
+  };
+
+  const openLightboxFor = (item) => {
+    const img = item.querySelector("img");
+    if (!img) return;
+
+    navItems = Array.from(document.querySelectorAll(".gallery-item")).filter(
+      (el) => el.querySelector("img") && !el.classList.contains("hidden")
+    );
+    currentIndex = navItems.indexOf(item);
+
+    showItem(item);
+    updateNavVisibility();
+    lightbox.classList.add("open");
+  };
+
+  const navigate = (direction) => {
+    if (navItems.length < 2) return;
+    currentIndex = (currentIndex + direction + navItems.length) % navItems.length;
+    showItem(navItems[currentIndex]);
+  };
 
   document.querySelectorAll(".gallery-item").forEach((item) => {
-    item.addEventListener("click", () => {
-      const img = item.querySelector("img");
-      if (!img) return;
+    item.addEventListener("click", () => openLightboxFor(item));
+  });
 
-      const title = item.querySelector("h3")?.textContent || "";
-      const meta = item.querySelector("span")?.textContent || "";
+  prevBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navigate(-1);
+  });
 
-      lightboxImg.src = img.src;
-      lightboxImg.alt = img.alt;
-      lightboxTitle.textContent = title;
-      lightboxMeta.textContent = meta;
-      lightbox.classList.add("open");
-    });
+  nextBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navigate(1);
   });
 
   const closeLightbox = () => lightbox.classList.remove("open");
@@ -70,7 +109,10 @@ if (lightbox) {
     if (e.target === lightbox) closeLightbox();
   });
   document.addEventListener("keydown", (e) => {
+    if (!lightbox.classList.contains("open")) return;
     if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowRight") navigate(1);
+    if (e.key === "ArrowLeft") navigate(-1);
   });
 }
 
